@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.mvc.Results._
 import play.api.mvc.{Request, RequestHeader, Result}
-import play.api.{Configuration, Environment, Mode}
+import play.api.{Configuration, Environment, Logging, Mode}
 import uk.gov.hmrc.agentservicesaccount.config.AppConfig
 import uk.gov.hmrc.agentservicesaccount.views.html.error_template
 import uk.gov.hmrc.auth.core.{InsufficientEnrolments, NoActiveSession}
@@ -38,7 +38,7 @@ class ErrorHandler @Inject() (
                                val messagesApi: MessagesApi,
   errorTemplateView: error_template,
                                val auditConnector: AuditConnector)(implicit val config: Configuration, ec: ExecutionContext, appConfig: AppConfig)
-  extends FrontendErrorHandler with AuthRedirects with ErrorAuditing {
+  extends FrontendErrorHandler with AuthRedirects with ErrorAuditing with Logging {
 
   private val isDevEnv = if (env.mode.equals(Mode.Test)) false else config.getString("run.mode").forall(Mode.Dev.toString.equals)
 
@@ -59,6 +59,7 @@ class ErrorHandler @Inject() (
   }
 
   override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit request: Request[_]) = {
+    logger.warn(s"AgentFondtendError $pageTitle ${request.method} ${request.uri}")
     errorTemplateView(
       Messages(pageTitle),
       Messages(heading),
